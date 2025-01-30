@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para Mi Compañero del Alma 🌈</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --color-primary: #1e88e5;
+            --color-secondary: #e91e63;
+            --color-bg: #f8f9fa;
+            --color-text: #2c3e50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Comic Neue', cursive;
+        }
+
+        body {
+            background: var(--color-bg);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.5s;
+            overflow-x: hidden;
+        }
+
+        .scene {
+            perspective: 1000px;
+            position: relative;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.98);
+            max-width: 800px;
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+            transform-style: preserve-3d;
+            position: relative;
+            backdrop-filter: blur(10px);
+            border: 4px solid var(--color-primary);
+            animation: cardEntrance 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 30px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .rainbow-text {
+            background: linear-gradient(45deg, 
+                #FF0000, #FF7F00, #FFFF00, #00FF00,
+                #0000FF, #4B0082, #8F00FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: rainbow 3s linear infinite;
+        }
+
+        .message-container {
+            position: relative;
+            margin: 30px 0;
+        }
+
+        .message {
+            font-size: 1.3em;
+            line-height: 1.8;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: textReveal 0.8s forwards;
+            animation-delay: 0.5s;
+        }
+
+        .floating-hearts span {
+            position: absolute;
+            font-size: 1.5em;
+            animation: float 6s infinite linear;
+            opacity: 0;
+        }
+
+        .interactive-area {
+            margin-top: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .hug-button {
+            background: var(--color-primary);
+            color: white;
+            padding: 18px 35px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hug-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(30, 136, 229, 0.4);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        @keyframes cardEntrance {
+            0% { transform: rotateY(90deg) scale(0.8); opacity: 0; }
+            100% { transform: rotateY(0) scale(1); opacity: 1; }
+        }
+
+        @keyframes rainbow {
+            100% { background-position: 200% 0; }
+        }
+
+        @keyframes textReveal {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Dark Mode */
+        body.dark-mode {
+            --color-bg: #1a1a2e;
+            --color-text: #e6e6e6;
+            --color-primary: #7c4dff;
+        }
+
+        body.dark-mode .card {
+            background: rgba(26, 26, 46, 0.95);
+            border-color: #7c4dff;
+        }
+
+        /* Efecto Parallax */
+        .parallax-layer {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .parallax-layer span {
+            position: absolute;
+            opacity: 0.1;
+            font-size: 2em;
+            animation: parallaxFloat 20s infinite linear;
+        }
+
+        @keyframes parallaxFloat {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-100vh) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓 Tema</button>
+
+    <div class="parallax-layer">
+        <!-- Elementos de fondo decorativos -->
+        <span style="left: 10%">🌈</span>
+        <span style="left: 30%">❤️</span>
+        <span style="left: 50%">✨</span>
+        <span style="left: 70%">🎉</span>
+        <span style="left: 90%">🌟</span>
+    </div>
+
+    <div class="scene">
+        <div class="card">
+            <h1><span class="rainbow-text">Para Mi Alma Gemela</span> 👬</h1>
+            
+            <div class="message-container">
+                <p class="message">Tu verdadera esencia va más allá de cualquier etiqueta...</p>
+                <p class="message">Lo que hace especial nuestro vínculo es esa conexión única que trasciende todo.</p>
+                <p class="message">Hoy quiero reafirmar que:</p>
+                <p class="message rainbow-text" style="font-size: 1.5em; margin: 25px 0;">
+                    ¡Me importas TAL CUAL ERES!
+                </p>
+            </div>
+
+            <div class="interactive-area">
+                <button class="hug-button" onclick="sendHug()">
+                    🤗 Abrazo de Aceptación
+                </button>
+                
+                <div class="personal-message">
+                    <textarea id="customMessage" placeholder="Escribe tu propio mensaje aquí..." 
+                              rows="3" style="width: 100%; padding: 10px; border-radius: 15px;"></textarea>
+                    <button onclick="addPersonalMessage()" style="margin-top: 10px;">Añadir Mensaje Personal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function sendHug() {
+            // Efecto de confeti
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#8F00FF']
+            });
+
+            // Efecto de corazones flotantes
+            const hearts = ['❤️', '💙', '💛', '💚', '💜'];
+            for(let i = 0; i < 20; i++) {
+                const heart = document.createElement('span');
+                heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+                heart.style.left = Math.random() * 100 + '%';
+                heart.style.animationDelay = Math.random() * 2 + 's';
+                document.querySelector('.message-container').appendChild(heart);
+            }
+
+            // Actualizar texto del botón
+            document.querySelector('.hug-button').innerHTML = '🤗 Abrazo Aceptado! 💖';
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        function addPersonalMessage() {
+            const text = document.getElementById('customMessage').value;
+            if(text) {
+                const newMessage = document.createElement('p');
+                newMessage.className = 'message';
+                newMessage.textContent = text;
+                newMessage.style.animation = 'textReveal 0.8s forwards';
+                document.querySelector('.message-container').appendChild(newMessage);
+                document.getElementById('customMessage').value = '';
+            }
+        }
+
+        // Iniciar animación de texto
+        document.querySelectorAll('.message').forEach((el, i) => {
+            el.style.animationDelay = `${i * 0.3 + 0.5}s`;
+        });
+    </script>
+</body>
+</html>
