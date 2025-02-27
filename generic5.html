@@ -1,16 +1,35 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>PyScript!</title>
-        <link rel="stylesheet" href="https://pyscript.net/snapshots/2024.9.2/core.css" />
-        <script type="module" src="https://pyscript.net/snapshots/2024.9.2/core.js"></script>
-    </head>
-    <body>
-        <!-- Configuración opcional -->
-        <div id="salida"></div>
-        <!-- Carga tu script Python -->
-        <script type="py" src="./dados.py"></script>
-    </body>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>PyScript Dice Game!</title>
+    <link rel="stylesheet" href="https://pyscript.net/snapshots/2024.9.2/core.css" />
+    <script type="module" src="https://pyscript.net/snapshots/2024.9.2/core.js"></script>
+    <style>
+        .dado { 
+            display: inline-block; 
+            padding: 10px; 
+            margin: 5px; 
+            border: 1px solid #000; 
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="players"></div>
+        <div id="dados-mesa" class="dados-container"></div>
+        <div id="dados-mano" class="dados-container"></div>
+        <button id="btn-puntuar" py-click="puntuar_y_pasar()">Puntuar y Pasar</button>
+        <button id="btn-seguir" py-click="puntuar_y_seguir()">Puntuar y Seguir</button>
+        <div id="mensajes"></div>
+    </div>
+
+    <py-config>
+        packages = []
+    </py-config>
+
+    <script type="py" src="./dados.py"></script>
+</body>
 </html>
