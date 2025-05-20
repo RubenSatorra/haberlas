@@ -1,0 +1,329 @@
+	<!DOCTYPE html>
+	<html lang="zxx" class="no-js">
+	<head>
+		<!-- Mobile Specific Meta -->
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<!-- Favicon-->
+		<link rel="shortcut icon" href="img/elements/fav.png">
+		<!-- Author Meta -->
+		<meta name="author" content="CodePixar">
+		<!-- Meta Description -->
+		<meta name="description" content="">
+		<!-- Meta Keyword -->
+		<meta name="keywords" content="">
+		<!-- meta character set -->
+		<meta charset="UTF-8">
+		<!-- Site Title -->
+		<title>Holii</title>
+
+		<link href="https://fonts.googleapis.com/css?family=Poppins:100,200,400,300,500,600,700" rel="stylesheet"> 
+			<!--
+			CSS
+			============================================= -->
+			<link rel="stylesheet" href="css/linearicons.css">
+			<link rel="stylesheet" href="css/owl.carousel.css">
+			<link rel="stylesheet" href="css/font-awesome.min.css">
+			<link rel="stylesheet" href="css/nice-select.css">			
+			<link rel="stylesheet" href="css/magnific-popup.css">
+			<link rel="stylesheet" href="css/bootstrap.css">
+			<link rel="stylesheet" href="css/main.css">
+			<!-- Añade esto en el <head> -->
+<style>
+    /* Animación de entrada mágica */
+    body {
+        opacity: 0;
+        animation: aparecer 1.5s ease-in-out forwards;
+        overflow-x: hidden;
+    }
+
+    @keyframes aparecer {
+        from { 
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to { 
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Corazones flotantes */
+    .corazon {
+        position: fixed;
+        font-size: 28px;
+        animation: flotar 3s linear infinite;
+        opacity: 0;
+        z-index: 999;
+        pointer-events: none;
+    }
+
+    @keyframes flotar {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* Animación para las imágenes de patos */
+    img {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    img:hover {
+        transform: scale(1.05) rotate(2deg);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    /* Efecto especial para el título Gaby */
+    .about-title {
+        position: relative;
+        display: inline-block;
+        animation: latido 1.5s ease-in-out infinite;
+    }
+
+    @keyframes latido {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+.petalo {
+    position: fixed;
+    width: 25px;
+    height: 25px;
+    background: #ff99cc;
+    clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+    animation: caida 8s linear infinite;
+    opacity: 0.7;
+    z-index: 9998;
+    pointer-events: none;
+}
+
+@keyframes caida {
+    0% { 
+        transform: translateY(-100vh) translateX(0) rotate(0deg);
+        opacity: 0.7;
+    }
+    100% { 
+        transform: translateY(100vh) translateX(50vw) rotate(360deg);
+        opacity: 0;
+    }
+}
+</style>
+
+<!-- Añade esto antes del </body> -->
+<script>
+    // Lluvia de corazones al hacer clic
+    document.addEventListener('click', function(e) {
+        const corazon = document.createElement('div');
+        corazon.className = 'corazon';
+        corazon.innerHTML = '❤️';
+        corazon.style.left = e.clientX + 'px';
+        corazon.style.top = e.clientY + 'px';
+        document.body.appendChild(corazon);
+        
+        setTimeout(() => corazon.remove(), 3000);
+    });
+
+// Función mejorada para pétalos
+function crearPetalos() {
+    const petalo = document.createElement('div');
+    petalo.className = 'petalo';
+    
+    // Posición inicial aleatoria en toda la pantalla
+    petalo.style.left = Math.random() * 100 + '%';
+    petalo.style.top = Math.random() * 100 + '%';
+    
+    // Tamaño y rotación aleatorios
+    const tamaño = Math.random() * 0.5 + 0.5;
+    const rotaciónInicial = Math.random() * 360;
+    
+    petalo.style.transform = `
+        scale(${tamaño}) 
+        rotate(${rotaciónInicial}deg)
+    `;
+    
+    // Color aleatorio pastel
+    const colores = ['#ff99cc', '#99ff99', '#99ccff', '#ffff99'];
+    petalo.style.backgroundColor = colores[Math.floor(Math.random() * colores.length)];
+    
+    // Duración aleatoria
+    const duración = Math.random() * 3 + 5;
+    petalo.style.animationDuration = `${duración}s`;
+    
+    document.body.appendChild(petalo);
+    
+    setTimeout(() => petalo.remove(), duración * 1000);
+}
+
+// Intervalo más dinámico
+setInterval(() => {
+    crearPetalos();
+    // Crear entre 1 y 3 pétalos a la vez
+    if(Math.random() > 0.5) crearPetalos();
+    if(Math.random() > 0.7) crearPetalos();
+}, 300);
+
+    // Efecto máquina de escribir en el título
+    const titulo = document.querySelector('.about-title');
+    const textoOriginal = titulo.textContent;
+    titulo.textContent = '';
+    
+    let index = 0;
+    function escribir() {
+        if(index < textoOriginal.length) {
+            titulo.textContent += textoOriginal.charAt(index);
+            index++;
+            setTimeout(escribir, 100);
+        }
+    }
+    setTimeout(escribir, 1000);
+</script>
+		</head>
+		<body>
+			<!-- Start banner Area -->
+			<section class="generic-banner relative">
+			<!-- Start Header Area -->
+			<header class="default-header">
+				<nav class="navbar navbar-expand-lg  navbar-light">
+					<div class="container">
+						  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+							<span class="text-white lnr lnr-menu"></span>
+						  </button>
+						<div class="collapse navbar-collapse justify-content-end align-items-center" id="navbarSupportedContent">
+						<ul class="navbar-nav">
+								<li><a href="index.html">Inicio</a></li>
+								<li><a href="index.html">¿Por qué?</a></li>									
+								<li><a href="index.html">Servicios</a></li>
+								<li><a href="index.html">Enemigos</a></li>
+								<li><a href="index.html">Los números</a></li>
+								<li><a href="index.html">Contáctanos</a></li>
+								<!-- Dropdown -->
+							<li class="dropdown">
+							<a class="dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+									Artículos
+								  </a>
+								  <div class="dropdown-menu">
+									<a class="dropdown-item" href="generic1.html">Conoce al enemigo</a>
+									<a class="dropdown-item" href="generic2.html">Las mentiras sobre los patos</a>
+									<a class="dropdown-item" href="generic3.html">Casos reales, víctimas humanas</a>
+								  </div>
+								    </li>
+							    </ul>
+							  </div>						
+						</div>
+					</nav>
+				</header>
+			<!-- End Header Area -->				
+				<div class="container" >
+					<div class="row height align-items-center justify-content-center" >
+						<div class="col-lg-10">
+							<div class="generic-banner-content">
+								<h2 class="text-white">Hola wenas como estamos</h2>
+								<p class="text-white">Espero que todo bien </p>
+							</div>							
+						</div>
+					</div>
+				</div>
+			</section>		
+			<!-- End banner Area -->
+		
+		<!-- About Generic Start -->
+		<div class="main-wrapper">
+
+			<!-- Start Generic Area -->
+			<section class="about-generic-area pb-100">
+				<div class="container border-top-generic">
+					<h3 class="about-title mb-30">Hola Gaby!!!</h3>
+					<div class="row">
+						<div class="col-md-12">
+							<div class="img-text">
+								<img src="img/patito1.jpg" alt="" class="img-fluid float-left mr-20 mb-20" style="max-height: 300px;">
+								<p>Aquí tienes una galería de patos para que puedas verla cuando necesites un empujón <p>
+								<img src="img/pat2.webp">
+							</div>
+						</div>
+						<div class="col-lg-12">
+							<img src="img/pat3.jpg" class="img-fluid float-right mr-20 mb-20" style="max-width: 300px; justify-content: center;">
+							<h3 class="alert-danger">Oh vaya! 
+							</h3>
+							<p>Más patitos, quién lo habría imaginado??</p>
+						</div>
+						<div>
+							<img src="img/pat4.jpg">
+							<img src="img/pat5.jpg"
+						</div>
+					</div>
+				</div>
+			</section>
+			<!-- End Generic Start -->		
+
+			<!-- start footer Area -->		
+			<footer class="footer-area section-gap">
+				<div class="container">
+					<div class="row">
+						<div class="col-lg-5 col-md-6 col-sm-6">
+							<div class="single-footer-widget">
+								<h6>Sobre nosotros</h6>
+								<p>
+									Soy un hombre de mediana edad que lo ha perdido todo por culpa de los patos. Soy experto en patologías y tengo un master en internet.
+								</p>
+								<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+            		<p class="footer-text">Copyright &copy;<script>document.write(new Date().getFullYear());</script> Todos los derechos guardados. | made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a></p>
+            		<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+							</div>
+						</div>
+						<div class="col-lg-5  col-md-6 col-sm-6">
+							<div class="single-footer-widget">
+								<h6>Noticiones</h6>
+								<p>Descubre todo sobre los patos</p>
+								<div class="" id="mc_embed_signup">
+
+										<form target="_blank" novalidate="true" action="https://spondonit.us12.list-manage.com/subscribe/post?u=1462626880ade1ac87bd9c93a&amp;id=92a4423d01" method="get" class="form-inline">
+
+										<div class="d-flex flex-row">
+
+											<input class="form-control" name="EMAIL" placeholder="Mete correo" onfocus="this.placeholder = ''" onblur="this.placeholder = 'No más bromas de pollas'" required="" type="email">
+
+
+				                            	<button class="click-btn btn btn-default"><i class="fa fa-long-arrow-right" aria-hidden="true"></i></button>
+				                            	<div style="position: absolute; left: -5000px;">
+													<input name="b_36c4fd991d266f23781ded980_aefe40901a" tabindex="-1" value="" type="text">
+												</div>
+				                          	
+											<!-- <div class="col-lg-4 col-md-4">
+												<button class="bb-btn btn"><span class="lnr lnr-arrow-right"></span></button>
+											</div>  -->
+										</div>		
+										<div class="info"></div>
+										</form>
+								</div>
+								</div>
+						</div>						
+						<div class="col-lg-2 col-md-6 col-sm-6 social-widget">
+							<div class="single-footer-widget">
+								<h6>Síguenos</h6>
+								<p>Contacta con gente con ideas afines.</p>
+								<div class="footer-social d-flex align-items-center">
+									<a href="#"><i class="fa fa-facebook"></i></a>
+									<a href="#"><i class="fa fa-twitter"></i></a>
+									<a href="#"><i class="fa fa-dribbble"></i></a>
+									<a href="#"><i class="fa fa-behance"></i></a>
+								</div>
+							</div>
+						</div>							
+					</div>
+				</div>
+			</footer>	
+			<!-- End footer Area -->		
+
+		</div>
+		<script src="js/vendor/jquery-2.2.4.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+		<script src="js/vendor/bootstrap.min.js"></script>
+		<script src="js/jquery.ajaxchimp.min.js"></script>
+		<script src="js/jquery.sticky.js"></script>
+		<script src="js/owl.carousel.min.js"></script>
+		<script src="js/jquery.nice-select.min.js"></script>
+		<script src="js/jquery.magnific-popup.min.js"></script>
+		<script src="js/main.js"></script>
+	</body>
+</html>
