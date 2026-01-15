@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <title>Le ajedrez</title>
+
+    <style>
+
+        body{
+            background: #EEAECA;
+            background: radial-gradient(circle,rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%);
+        }
+
+        .container{
+        
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+            flex-shrink: 1;
+
+        }
+
+        #chessboard {
+            width: 600px;
+            height: 600px;
+
+
+        }
+
+
+        .info {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .highlight-red-check{
+        
+            box-shadow: inset 0 0 3px 3px red;
+        
+        }
+
+
+
+    </style>
+
+</head>
+<body>
+    
+    <div class="container">
+        <div id="chessboard"></div>
+    </div>
+    <label id="chessStatus" class="chessStatus">Estado del juego</label>
+    <button id="resetButton">Reiniciar partida</button>
+    
+    <script type="text/javascript">
+
+        let board, game;
+
+        
+        
+
+        game = new Chess(); //importante inicializar el juego (no es que se me haya olvidado nunca...)
+
+        function getKeyByValue(object, value){
+        
+            for (let key in object){
+            
+                if (object[key] === value){
+                
+                    return key
+
+                }
+
+            }
+            return null;
+        }
+
+
+        updateStatus(); // Llamar a updateStatus al inicio para mostrar el estado inicial
+
+        let config = {
+            position: 'start',
+            pieceTheme: "https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png",
+            showNotation: true,
+            draggable: true,
+            dropOffBoard: 'snapback',
+            snapbackSpeed: 200,
+            snapSpeed: 50,
+            onDrop: onDrop,
+            onSnapEnd: onSnapEnd,
+            onDragStart: onDragStart,
+            onMouseoverSquare: onMouseoverSquare,
+            onMouseoutSquare: onMouseoutSquare
+        }
+
+        board = Chessboard('chessboard', config);
+        
+        function onDragStart(source, piece){
+        
+            if (game.game_over()){
+            
+                return false;
+
+            }
+            if ((game.turn() === 'w' && piece.search("b") !== -1) ||
+            
+                (game.turn() === 'b' && piece.search('w') !== -1)){
+                
+                    return false;
+                
+            }
+            
+        }
+
+
+        $('#resetButton').on('click', function(){
+            game.reset();
+            board.position(game.fen());
+            $("#chessStatus").html("Gayming"); //actualizar el estado del juego para que no salga todo el rato lo mismo
+            updateStatus();
+        })
+
+        function onDrop(source, target){
+
+
+            let move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q',
+            });
+
+
+            
+            if (move === null) {
+                return 'snapback';
+            }
+            
+            
+            removeRedSquares();
+            removeGreySquares();
+            
+            board.position(game.fen());
+            updateStatus();
+
+
+
+
+        }
+
+        function updateStatus(){
+        
+            removeRedSquares();
+
+            let prevColor = (game.turn() === 'w') ? "Black" : "White";
+
+
+
+            if (game.in_check()){
+
+
+                let kingPosition = getKeyByValue(board.position(), game.turn() + 'K');
+                redSquare(kingPosition);
+            }
+            
+            
+            if (game.in_checkmate()){
+                
+                $("#chessStatus").html("Checkmate!"+prevColor+"wins.")
+            
+            }
+
+            if (game.in_stalemate()){
+            
+                $("#chessStatus").html("Draw by stalemate!")
+
+            
+            }
+
+            if (game.in_threefold_repetition()){
+            
+                $("#chessStatus").html("Draw by threefold repetition!")
+
+            
+            }
+
+
+            if (game.insufficient_material()){
+            
+                $("#chessStatus").html("Draw by insufficient material!")
+
+            
+            }
+
+        
+        }
+
+
+
+        function onSnapEnd(){
+            // Esta función se llama después de que se completa la animación
+            // Actualizamos el tablero con la posición FEN actual
+            board.position(game.fen());
+        }
+
+        let whiteSquareGrey = '#a9a9a9';
+        let blackSquareGrey = '#696969';
+
+        function greySquare(square){
+        
+            let $square = $('#chessboard .square-'+ square)
+
+            let background = whiteSquareGrey;
+
+            if($square.hasClass('black-3c85d')){
+            
+                background = blackSquareGrey
+
+            }
+
+
+            $square.css('background', background);
+        
+        }
+
+
+        function removeGreySquares(){
+        
+            $('#chessboard .square-55d63').css('background','');
+
+        }
+
+        function redSquare(square){
+        
+            let $square = $('#chessboard .square-' + square);
+        
+            $square.addClass('highlight-red-check');
+
+        }
+
+        function removeRedSquares(){
+        
+        
+            $('#chessboard .square-55d63').removeClass('highlight-red-check');
+
+        }
+
+
+
+
+
+
+        function onMouseoverSquare(square, piece){
+        
+            
+            let moves = game.moves({
+                
+                square: square,
+                verbose:true
+                
+                
+            })
+            console.log(moves);
+            
+            if (moves.length === 0) return
+            
+            greySquare(square);
+            
+            //va a marcar los que sean posibles
+            for (let i = 0; i < moves.length; i++){
+                
+                greySquare(moves[i].to);
+                
+                
+            }
+            
+            
+            
+        }
+        
+        function onMouseoutSquare(square, piece){
+        
+            removeGreySquares();
+        
+        }
+
+
+
+
+
+
+        
+    </script>
+
+</body>
+</html>
