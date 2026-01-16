@@ -8,6 +8,7 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="Garbochess-JS-master/Garbochess-JS-master/js/garbochess.js"></script>
     <title>Le ajedrez</title>
 
     <style>
@@ -62,46 +63,76 @@
     <script type="text/javascript">
 
         let board, game;
-
         
         
 
-        game = new Chess(); //importante inicializar el juego (no es que se me haya olvidado nunca...)
+        $(document).ready(function(){
+            game = new Chess(); //importante inicializar el juego (no es que se me haya olvidado nunca...)
 
-        function getKeyByValue(object, value){
-        
-            for (let key in object){
+             console.log("Documento cargado, verificando Garbochess...");
             
-                if (object[key] === value){
+            // Primero verifica si Garbochess está disponible
+            if (typeof Garbochess === 'undefined') {
+                console.error("ERROR: Garbochess no está definido. Revisa la carga del script.");
+                $("#chessStatus").html("Error: Motor de ajedrez no cargado");
+                return; // Detener la ejecución
+            }
+            
+            console.log("Garbochess encontrado, inicializando...");
+            
+            try {
+                game = new Chess(); // Inicializar el juego
+                garbochessEngine = Garbochess.init(); // Inicializar el motor
+                garbochessEngine.setDepth(3); // Configurar dificultad
+                console.log("Garbochess inicializado correctamente");
+            } catch (error) {
+                console.error("Error al inicializar Garbochess:", error);
+                $("#chessStatus").html("Error al inicializar el motor");
+                return;
+            }
+
+
+            let garbochessEngine = Garbochess.init(); //comienzo el bot cuando empiece la partida
+
+
+
+            garbochessEngine.setDepth(3); // esto es la profundidad/dificultad
+
+            function getKeyByValue(object, value){
+            
+                for (let key in object){
                 
-                    return key
+                    if (object[key] === value){
+                    
+                        return key
+
+                    }
 
                 }
-
+                return null;
             }
-            return null;
-        }
 
 
-        updateStatus(); // Llamar a updateStatus al inicio para mostrar el estado inicial
+            updateStatus(); // Llamar a updateStatus al inicio para mostrar el estado inicial
 
-        let config = {
-            position: 'start',
-            pieceTheme: "https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png",
-            showNotation: true,
-            draggable: true,
-            dropOffBoard: 'snapback',
-            snapbackSpeed: 200,
-            snapSpeed: 50,
-            onDrop: onDrop,
-            onSnapEnd: onSnapEnd,
-            onDragStart: onDragStart,
-            onMouseoverSquare: onMouseoverSquare,
-            onMouseoutSquare: onMouseoutSquare
-        }
+            let config = {
+                position: 'start',
+                pieceTheme: "https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png",
+                showNotation: true,
+                draggable: true,
+                dropOffBoard: 'snapback',
+                snapbackSpeed: 200,
+                snapSpeed: 50,
+                onDrop: onDrop,
+                onSnapEnd: onSnapEnd,
+                onDragStart: onDragStart,
+                onMouseoverSquare: onMouseoverSquare,
+                onMouseoutSquare: onMouseoutSquare
+            }
 
-        board = Chessboard('chessboard', config);
         
+            board = Chessboard('chessboard', config);
+    })
         function onDragStart(source, piece){
         
             if (game.game_over()){
@@ -150,8 +181,47 @@
             updateStatus();
 
 
+            //si no se ha acabado la partida después de los movimientos, juega el bot
+            if (!game.game_over()){
+            
+                setTimeout(makeBotMove, 250);
+            }
 
 
+
+        }
+
+
+        function makeBotMove(){
+        
+            //pillamos el estado del tablero en formato FEN que es lo que entienden los clankers
+            let fen = game.fen();
+
+            //le mando la posición a stockfish para que calcule el mejor movimiento
+
+            let botMoveResult = garbochessEngine.move(fen);
+
+
+            //miramos si es un movimiento válido y lo convertimos a lo que chess.js entiende
+
+            let move = game.move({
+            
+                from: botMoveResult.from,
+                to: botMoveResult.to,
+                promotion:'q'
+
+            
+            });
+
+            //si el movimiento es legal, lo tenemos que aplicar y actualizamos las cosas
+
+            if (move !== null){
+            
+                board.position(game.fen());
+                updateStatus();
+                removeGreySquares();
+
+            }  
         }
 
         function updateStatus(){
