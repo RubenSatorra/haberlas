@@ -3,90 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-
-    
-
+    <title>Ajedrez pero guapo.</title>
     <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
     <script src="js/jquery.js"></script>
     <script src="js/chessboard-1.0.0.min.js"></script>
     <script src="js/chess.js"></script>
-    <title>Le ajedrez</title>
-
+    <script src="js/stockfish.js"></script>
+    
     <style>
-
         body{
             background: #EEAECA;
             background: radial-gradient(circle,rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%);
+            overflow: hidden; /* Esto debería arreglar el jugar negras en movil (espero)*/
         }
-
         .container{
-        
             display: flex;
             justify-content: center;
             align-items: center;
             flex-grow: 1;
             flex-shrink: 1;
-
         }
-
         #chessboard {
-            width: 600px;
-            height: 600px;
-
-
+            width: 500px;
+            height: 500px;
         }
-
-
         .info {
             text-align: center;
             margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
         }
-
         .highlight-red-check{
-        
             box-shadow: inset 0 0 3px 3px red;
-        
         }
-
-
-
+        button, select {
+            margin: 5px;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            text-align: center;
+            margin: 20px;
+        }
     </style>
-
 </head>
 <body>
     
     <div class="container">
         <div id="chessboard"></div>
     </div>
-    <label id="chessStatus" class="chessStatus">Estado del juego</label>
-    <button id="resetButton">Reiniciar partida</button>
     
+    <div class="controls">
+        <label id="chessStatus" class="info">Estado del juego</label><br>
+        <button id="resetButton">Reiniciar partida</button>
+        
+        <select name="botDifficulty" id="botDifficulty">
+            <option value="1">Profundidad 1</option>
+            <option value="2">Profundidad 2</option>
+            <option value="3">Profundidad 3</option>
+            <option value="4">Profundidad 4</option>
+            <option value="5">Profundidad 5 😳</option>
+        </select>
+
+        <select name="playerColor" id="playerColor">
+            <option value="white">Jugar blancas</option>
+            <option value="black" selected>Jugar negras</option>
+            <option value="both">Te da igual? (como todo...)</option>
+        </select>
+
+        <button id="botMoveButton">Mover manualmente al Bot</button>
+        <button id="toggleBot">Activar movimientos automáticos del bot</button>
+    </div>
+
     <script type="text/javascript">
-
         let board, game;
+        let stockfish;
+        let botActive = false;
+        let playerColor = 'black';
+        let botThinking = false;
+        let stockfishReady = false;
 
-        
-        
+        game = new Chess();
 
-        game = new Chess(); //importante inicializar el juego (no es que se me haya olvidado nunca...)
-
-        function getKeyByValue(object, value){
-        
-            for (let key in object){
+        // Inicializar Stockfish con manejo de estado
+        function initStockfish() {
+            stockfish = new Worker('js/stockfish.js');
             
-                if (object[key] === value){
-                
-                    return key
+            // Para debug: ver todos los mensajes
+            stockfish.addEventListener('message', function(e) {
+                console.log('Stockfish:', e.data);
+            });
+            
+            stockfish.onmessage = function(event) {
+                const message = event.data;
+                console.log("Stockfish dice:", message);
 
+                // Cuando Stockfish está listo después de 'uci'
+                if (message === 'uciok') {
+                    stockfishReady = true;
+                    console.log("Stockfish listo para configurar");
+                    setStockfishDifficulty(2);
                 }
+                
+                // Cuando está listo después de configurar
+                else if (message === 'readyok') {
+                    console.log("Stockfish completamente configurado");
+                }
+                
+                // Procesar movimiento del bot
+                else if (message.includes('bestmove')) {
+                    if (!botActive || !botThinking) return;
+                    
+                    const parts = message.split(' ');
+                    const bestMove = parts[1];
+                    
+                    if (bestMove && bestMove !== 'none') {
+                        // Aplicar el movimiento
+                        const move = game.move({
+                            from: bestMove.substring(0, 2),
+                            to: bestMove.substring(2, 4),
+                            promotion: bestMove.length > 4 ? bestMove.substring(4, 5) : 'q'
+                        });
 
+                        if (move) {
+                            board.position(game.fen());
+                            updateStatus();
+                            checkTurn();
+                        }
+                    }
+                    botThinking = false;
+                }
+            };
+
+            stockfish.onerror = function(error) {
+                console.error('Error en Stockfish Worker:', error);
+                $("#chessStatus").html("Error cargando Stockfish");
+            };
+
+            // Iniciar protocolo UCI
+            stockfish.postMessage('uci');
+            stockfish.postMessage('isready');
+        }
+
+        // Configurar dificultad - VERSIÓN SIMPLIFICADA
+        function setStockfishDifficulty(level) {
+            if (!stockfishReady) {
+                console.warn("Stockfish no está listo aún");
+                return;
+            }
+            
+            // Solo configuramos el nivel de habilidad para evitar problemas
+            const skillLevel = Math.min(20, level * 4);
+            console.log(`Configurando dificultad: nivel ${level}, skill ${skillLevel}`);
+            
+            stockfish.postMessage(`setoption name Skill Level value ${skillLevel}`);
+            stockfish.postMessage('isready');
+        }
+
+        // Pedir movimiento al bot
+        function getBotMove() {
+            if (!botActive || botThinking || game.game_over() || !stockfishReady) {
+                console.log("No se puede mover el bot:", {
+                    botActive, botThinking, gameOver: game.game_over(), stockfishReady
+                });
+                return;
+            }
+
+            // Verificar si es turno del bot
+            const currentTurn = game.turn();
+            const isBotTurn = 
+                (playerColor === 'white' && currentTurn === 'b') ||
+                (playerColor === 'black' && currentTurn === 'w');
+            
+            if (!isBotTurn && playerColor !== 'both') {
+                console.log("No es turno del bot");
+                return;
+            }
+
+            console.log("Calculando movimiento del bot...");
+            botThinking = true;
+            updateStatus();
+            
+            // Configurar posición y calcular
+            const fen = game.fen();
+            console.log("FEN enviado a Stockfish:", fen);
+            
+            stockfish.postMessage(`position fen ${fen}`);
+            
+            const difficulty = parseInt(document.getElementById('botDifficulty').value);
+            const thinkTime = 1000 + (difficulty * 500);
+            
+            stockfish.postMessage(`go movetime ${thinkTime}`);
+        }
+
+        // Verificar turno
+        function checkTurn() {
+            if (!botActive || game.game_over() || !stockfishReady) return;
+
+            const turn = game.turn();
+
+            if (playerColor === 'both') {
+                // Modo ambos: el bot juega ambos lados
+                setTimeout(() => getBotMove(), 500);
+                return;
+            }
+
+            if ((playerColor === 'white' && turn === 'b') ||
+                (playerColor === 'black' && turn === 'w')) {
+                setTimeout(() => getBotMove(), 500);
+            }
+        }
+
+        function getKeyByValue(object, value) {
+            for (let key in object) {
+                if (object[key] === value) {
+                    return key;
+                }
             }
             return null;
         }
 
-
-        updateStatus(); // Llamar a updateStatus al inicio para mostrar el estado inicial
+        updateStatus();
 
         let config = {
             position: 'start',
@@ -104,34 +253,92 @@
         }
 
         board = Chessboard('chessboard', config);
-        
-        function onDragStart(source, piece){
-        
-            if (game.game_over()){
+        initStockfish();
+        function onDragStart(source, piece) {
+            if (game.game_over() || botThinking) return false;
             
-                return false;
+            // Si el bot no está activo, permitir todo
+            if (!botActive) return true;
 
+            const turn = game.turn();
+            const pieceColor = piece.charAt(0); // 'w' o 'b' del string de la pieza
+
+            // Verificar si la pieza es del color correcto
+            if (playerColor === 'both') {
+                // Si juega ambos colores, solo verificar que sea su turno
+                return (pieceColor === turn);
             }
-            if ((game.turn() === 'w' && piece.search("b") !== -1) ||
-            
-                (game.turn() === 'b' && piece.search('w') !== -1)){
-                
-                    return false;
-                
+
+            // Para modo normal: verificar que la pieza sea del color del jugador Y sea su turno
+            if (playerColor === 'white') {
+                return (pieceColor === 'w' && turn === 'w'); // Solo puede mover blancas en turno de blancas
+            } else if (playerColor === 'black') {
+                return (pieceColor === 'b' && turn === 'b'); // Solo puede mover negras en turno de negras
             }
             
+            return false;
         }
 
-
-        $('#resetButton').on('click', function(){
+        // Event handlers
+        $('#resetButton').on('click', function() {
             game.reset();
             board.position(game.fen());
-            $("#chessStatus").html("Gayming"); //actualizar el estado del juego para que no salga todo el rato lo mismo
+            $("#chessStatus").html("Nueva Partida");
             updateStatus();
-        })
 
-        function onDrop(source, target){
+            if (botActive && playerColor !== 'white') {
+                setTimeout(() => getBotMove(), 500);
+            }
+        });
 
+        $('#toggleBot').on('click', function() {
+            botActive = !botActive;
+            updateBotButton();
+
+            if (botActive) {
+                if (!stockfishReady) {
+                    alert("Stockfish aún no está listo. Espera un momento.");
+                    botActive = false;
+                    updateBotButton();
+                    return;
+                }
+                checkTurn();
+            }
+
+            updateStatus();
+        });
+
+        $('#playerColor').on('change', function() {
+            playerColor = $(this).val();
+            updateStatus();
+
+            if (botActive) {
+                checkTurn();
+            }
+        });
+
+        $('#botDifficulty').on('change', function() {
+            const level = parseInt($(this).val());
+            setStockfishDifficulty(level);
+        });
+
+        $('#botMoveButton').on('click', function() {
+            if (!botActive) {
+                alert("Primero activa el bot");
+                return;
+            }
+            if (!stockfishReady) {
+                alert("Stockfish aún no está listo");
+                return;
+            }
+            getBotMove();
+        });
+
+        function onDrop(source, target) {
+            if (botThinking) {
+                console.log("Bot pensando, movimiento bloqueado");
+                return 'snapback';
+            }
 
             let move = game.move({
                 from: source,
@@ -139,167 +346,140 @@
                 promotion: 'q',
             });
 
-
-            
             if (move === null) {
                 return 'snapback';
             }
-            
-            
+
             removeRedSquares();
             removeGreySquares();
             
             board.position(game.fen());
             updateStatus();
 
+            if (botActive) {
+                setTimeout(() => checkTurn(), 500);
+            }
 
-
-
+            return true;
         }
 
-        function updateStatus(){
-        
+        function updateStatus() {
+
+
             removeRedSquares();
 
-            let prevColor = (game.turn() === 'w') ? "Black" : "White";
+            let prevColor = (game.turn() === 'w') ? "Negras" : "Blancas";
 
-
-
-            if (game.in_check()){
-
-
+            if (game.in_check()) {
                 let kingPosition = getKeyByValue(board.position(), game.turn() + 'K');
                 redSquare(kingPosition);
             }
-            
-            
-            if (game.in_checkmate()){
+
+            if (game.in_checkmate()) {
+                $("#chessStatus").html("¡Jaque mate! " + prevColor + " ganan.");
+                botActive = false;
+                updateBotButton();
+            } else if (game.in_stalemate()) {
+                $("#chessStatus").html("Tablas por estancamiento!");
+                botActive = false;
+                updateBotButton();
+            } else if (game.in_threefold_repetition()) {
+                $("#chessStatus").html("Tablas por repetición de movimientos!");
+                botActive = false;
+                updateBotButton();
+            } else if (game.insufficient_material()) {
+                $("#chessStatus").html("Tablas por material insuficiente!");
+                botActive = false;
+                updateBotButton();
+            } else if (game.in_draw()) {
+                $("#chessStatus").html("Estás en tablas!");
+                botActive = false;
+                updateBotButton();
+            } else {
+                let turn = (game.turn() === 'w') ? "Blancas" : "Negras";
+                let status = "Turno: " + turn;
                 
-                $("#chessStatus").html("Checkmate!"+prevColor+"wins.")
-            
+                if (!stockfishReady) {
+                    status += " (Inicializando Stockfish...)";
+                } else if (botActive) {
+                    if (botThinking) {
+                        status += " (Bot pensando...🤔)";
+                    } else if ((playerColor === 'white' && game.turn() === 'b') ||
+                            (playerColor === 'black' && game.turn() === 'w')) {
+                        status += " (Turno del Bot)";
+                    } else {
+                        status += " (Tu turno)";
+                    }
+                }
+
+                $("#chessStatus").html(status);
             }
-
-            if (game.in_stalemate()){
-            
-                $("#chessStatus").html("Draw by stalemate!")
-
-            
-            }
-
-            if (game.in_threefold_repetition()){
-            
-                $("#chessStatus").html("Draw by threefold repetition!")
-
-            
-            }
-
-
-            if (game.insufficient_material()){
-            
-                $("#chessStatus").html("Draw by insufficient material!")
-
-            
-            }
-
-        
         }
 
+        function updateBotButton() {
+            const button = document.getElementById('toggleBot');
+            button.textContent = botActive ? "Desactivar Bot" : "Activar Bot";
+            button.style.backgroundColor = botActive ? "#f44336" : "#4CAF50";
+        }
 
-
-        function onSnapEnd(){
-            // Esta función se llama después de que se completa la animación
-            // Actualizamos el tablero con la posición FEN actual
+        function onSnapEnd() {
             board.position(game.fen());
         }
 
         let whiteSquareGrey = '#a9a9a9';
         let blackSquareGrey = '#696969';
 
-        function greySquare(square){
-        
-            let $square = $('#chessboard .square-'+ square)
-
+        function greySquare(square) {
+            let $square = $('#chessboard .square-'+ square);
             let background = whiteSquareGrey;
 
-            if($square.hasClass('black-3c85d')){
-            
-                background = blackSquareGrey
-
+            if($square.hasClass('black-3c85d')) {
+                background = blackSquareGrey;
             }
 
-
             $square.css('background', background);
-        
         }
 
-
-        function removeGreySquares(){
-        
+        function removeGreySquares() {
             $('#chessboard .square-55d63').css('background','');
-
         }
 
-        function redSquare(square){
-        
+        function redSquare(square) {
             let $square = $('#chessboard .square-' + square);
-        
             $square.addClass('highlight-red-check');
-
         }
 
-        function removeRedSquares(){
-        
-        
+        function removeRedSquares() {
             $('#chessboard .square-55d63').removeClass('highlight-red-check');
-
         }
 
-
-
-
-
-
-        function onMouseoverSquare(square, piece){
-        
+        function onMouseoverSquare(square, piece) {
+            if (botThinking) return;
             
             let moves = game.moves({
-                
                 square: square,
-                verbose:true
-                
-                
-            })
-            console.log(moves);
-            
-            if (moves.length === 0) return
+                verbose: true
+            });
+
+            if (moves.length === 0) return;
             
             greySquare(square);
             
-            //va a marcar los que sean posibles
-            for (let i = 0; i < moves.length; i++){
-                
+            for (let i = 0; i < moves.length; i++) {
                 greySquare(moves[i].to);
-                
-                
             }
-            
-            
-            
         }
         
-        function onMouseoutSquare(square, piece){
-        
+        function onMouseoutSquare(square, piece) {
             removeGreySquares();
-        
         }
 
+        // Inicializar
+        updateBotButton();
+        updateStatus();
 
-
-
-
-
-        
+        // Para depurar porque me trae loco esto
+        console.log("Aplicación iniciada. Esperando Stockfish...");
     </script>
-
 </body>
 </html>
