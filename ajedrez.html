@@ -12,18 +12,23 @@
     
     <style>
         body{
+            display: flex;
+            flex-direction: column;
+            max-width: 100vh;
             background: #EEAECA;
             background: radial-gradient(circle,rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%);
             overflow: hidden; /* Esto debería arreglar el jugar negras en movil (espero)*/
         }
         .container{
             display: flex;
+            max-width: 90vw;
             justify-content: center;
             align-items: center;
             flex-grow: 1;
             flex-shrink: 1;
         }
         #chessboard {
+            
             width: 500px;
             height: 500px;
         }
@@ -38,10 +43,11 @@
         }
         button, select {
             margin: 5px;
-            padding: 8px 12px;
+            padding: 5px 5px;
             font-size: 14px;
         }
         button {
+            max-width: 65px;
             background-color: #4CAF50;
             color: white;
             border: none;
@@ -53,6 +59,10 @@
         }
         .controls {
             display: flex;
+            flex-direction: row;
+            overflow: hidden;
+            flex-wrap: wrap;
+            max-width: 100vh;
             justify-content: center;
             text-align: center;
             margin: 20px;
@@ -67,8 +77,6 @@
     
     <div class="controls">
         <label id="chessStatus" class="info">Estado del juego</label><br>
-        <button id="resetButton">Reiniciar partida</button>
-        
         <select name="botDifficulty" id="botDifficulty">
             <option value="1">Profundidad 1</option>
             <option value="2">Profundidad 2</option>
@@ -76,12 +84,15 @@
             <option value="4">Profundidad 4</option>
             <option value="5">Profundidad 5 😳</option>
         </select>
-
+        
         <select name="playerColor" id="playerColor">
             <option value="white">Jugar blancas</option>
             <option value="black" selected>Jugar negras</option>
             <option value="both">Te da igual? (como todo...)</option>
         </select>
+        <button id="resetButton">Reiniciar partida</button>
+        
+
 
         <button id="botMoveButton">Mover manualmente al Bot</button>
         <button id="toggleBot">Activar movimientos automáticos del bot</button>
